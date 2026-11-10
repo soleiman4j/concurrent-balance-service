@@ -72,7 +72,14 @@ public final class InMemoryBalanceService implements BalanceService {
 
     @Override
     public long getBalance(String accountId) {
-        return 0;
+        requireId(accountId, "accountId");
+        Account account = findAccount(accountId);
+        account.lock.lock();
+        try {
+            return account.balance;
+        } finally {
+            account.lock.unlock();
+        }
     }
 
     private static void requireId(String id, String name) {
