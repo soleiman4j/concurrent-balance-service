@@ -40,4 +40,20 @@ class InMemoryBalanceServiceTest {
         assertEquals(1_000, service.getBalance("A"));
         assertEquals(Long.MAX_VALUE, service.getBalance("MAX"));
     }
+
+    @Test
+    void repeatedCreditsDoNotIncreaseBalanceAgain() {
+        for (int i = 0; i < 3; i++) {
+            service.credit("A", 100, "tx-1");
+        }
+        assertEquals(1_100, service.getBalance("A"));
+    }
+
+    @Test
+    void creditOverflowDoesNotChangeAccount() {
+        service.createAccount("MAX", Long.MAX_VALUE);
+        assertEquals(BALANCE_OVERFLOW, assertThrows(BalanceException.class,
+                () -> service.credit("MAX", 1, "overflow-credit")).reason());
+        assertEquals(Long.MAX_VALUE, service.getBalance("MAX"));
+    }
 }
