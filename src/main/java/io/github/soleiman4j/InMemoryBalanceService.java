@@ -25,7 +25,17 @@ public final class InMemoryBalanceService implements BalanceService {
 
     @Override
     public void credit(String accountId, long amount, String transactionId) {
-
+        requireId(accountId, "accountId");
+        requirePositiveAmount(amount);
+        once(transactionId, new Request(Operation.CREDIT, accountId, null, amount), () -> {
+            Account account = findAccount(accountId);
+            account.lock.lock();
+            try {
+                account.balance = safeAdd(account.balance, amount);
+            } finally {
+                account.lock.unlock();
+            }
+        });
     }
 
     @Override
