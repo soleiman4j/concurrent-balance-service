@@ -22,4 +22,12 @@ class InMemoryBalanceServiceTest {
         assertEquals(ACCOUNT_ALREADY_EXISTS, assertThrows(BalanceException.class,
                 () -> service.createAccount("A", 123)).reason());
     }
+
+    @Test
+    void repeatedTransfersDoNotMoveMoneyAgain() {
+        service.transfer("A", "B", 300, "tx-3");
+        service.transfer("A", "B", 300, "tx-3");
+        assertEquals(700, service.getBalance("A"));
+        assertEquals(800, service.getBalance("B"));
+    }
 }
