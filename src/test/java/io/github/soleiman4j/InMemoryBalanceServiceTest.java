@@ -30,4 +30,14 @@ class InMemoryBalanceServiceTest {
         assertEquals(700, service.getBalance("A"));
         assertEquals(800, service.getBalance("B"));
     }
+
+    @Test
+    void transferOverflowDoesNotPartiallyDebitSource() {
+        service.createAccount("MAX", Long.MAX_VALUE);
+        BalanceException error = assertThrows(BalanceException.class,
+                () -> service.transfer("A", "MAX", 1, "overflow-transfer"));
+        assertEquals(BALANCE_OVERFLOW, error.reason());
+        assertEquals(1_000, service.getBalance("A"));
+        assertEquals(Long.MAX_VALUE, service.getBalance("MAX"));
+    }
 }
